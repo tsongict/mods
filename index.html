@@ -20,6 +20,11 @@
             position: relative;
             min-height: 100vh;
         }
+
+        /* Wrap content so we can blur it without blurring the popup */
+        .page-wrapper {
+            transition: filter 0.3s ease;
+        }
         
         /* Tiled Background Pattern */
         .bg-pattern {
@@ -87,7 +92,7 @@
             letter-spacing: -0.5px;
         }
         
-        /* The Clickable Button leading to Mods Section */
+        /* Primary Hero Navigation Button */
         .download-btn {
             display: inline-block;
             background: #0055ff;
@@ -135,24 +140,14 @@
             justify-content: space-between;
             transition: border-color 0.2s;
         }
-        .mod-card:hover {
-            border-color: #0055ff;
-        }
-        .card-title {
-            font-size: 1.6rem; 
-            color: #0055ff; 
-            margin-bottom: 10px;
-        }
-        .card-desc {
-            color: #aaa; 
-            font-size: 0.95rem; 
-            line-height: 1.5; 
-            margin-bottom: 25px;
-        }
+        .mod-card:hover { border-color: #0055ff; }
+        .card-title { font-size: 1.6rem; color: #0055ff; margin-bottom: 10px; }
+        .card-desc { color: #aaa; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px; }
+        
         .card-btn {
             background: #222; 
             color: #fff; 
-            text-decoration: none; 
+            cursor: pointer;
             padding: 12px; 
             text-align: center; 
             border-radius: 4px; 
@@ -160,16 +155,8 @@
             border: 1px solid #333;
             transition: background 0.2s;
         }
-        .card-btn:hover {
-            background: #0055ff;
-            border-color: #0055ff;
-        }
-        .card-btn.locked {
-            background: #151515; 
-            color: #444; 
-            border-color: #222;
-            pointer-events: none;
-        }
+        .card-btn:hover { background: #0055ff; border-color: #0055ff; }
+        .card-btn.locked { background: #151515; color: #444; border-color: #222; pointer-events: none; }
         
         /* Footer Graphics Card Joke */
         footer {
@@ -183,82 +170,104 @@
             line-height: 1.3;
             pointer-events: none;
         }
+
+        /* ================= MODAL DOWNLOAD POPUP SYSTEM ================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px); /* The background blur effect */
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-box {
+            background: #111111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 20px;
+            background: none; border: none;
+            color: #666; font-size: 1.5rem; cursor: pointer;
+        }
+        .modal-close:hover { color: #fff; }
+        .modal-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; color: #fff; }
+        .modal-subtitle { font-size: 0.9rem; color: #666; margin-bottom: 25px; }
+        
+        /* Selection Menu Groups */
+        .select-group { margin-bottom: 20px; }
+        .select-label { display: block; font-size: 0.85rem; text-transform: uppercase; color: #888; font-weight: bold; margin-bottom: 8px; letter-spacing: 0.5px; }
+        
+        .custom-select {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+        }
+        .custom-select:focus { border-color: #0055ff; }
+        
+        .modal-action-btn {
+            display: block; width: 100%; text-align: center;
+            background: #0055ff; color: #fff; font-weight: bold;
+            text-decoration: none; padding: 14px; border-radius: 6px;
+            margin-top: 25px; transition: background 0.2s;
+        }
+        .modal-action-btn:hover { background: #0044cc; }
     </style>
 </head>
 <body>
 
-    <!-- Background text repeat layer -->
-    <div class="bg-pattern">back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background</div>
-
-    <!-- Website Header Navigation Bar -->
-    <header>
-        <a href="#" class="logo">epik mods</a>
-        <input type="text" class="search-bar" id="modSearch" placeholder="Search Minecraft mods...">
-    </header>
-
-    <!-- Hero Joking Banner Area -->
-    <main class="hero-container">
-        <div class="joke-box">
-            <div class="joke-text">start searching the seven se—</div>
-            <!-- Anchor link jumping to #mod-section below -->
-            <a href="#mod-section" class="download-btn">mods.</a>
-        </div>
-    </main>
-
-    <!-- Dedicated Mods Catalog Section -->
-    <section id="mod-section" class="mod-section">
-        <h2 class="section-title">Available Mods</h2>
+    <!-- Main site wrapper to apply blur layer safely -->
+    <div class="page-wrapper" id="mainWrapper">
         
-        <div class="mod-grid">
-            
-            <!-- Mod Card 1: Level Devil Project -->
-            <div class="mod-card">
-                <div>
-                    <h3 class="card-title">Level Devil In Minecraft</h3>
-                    <p class="card-desc">
-                        A fully 3D block recreation of the world's most frustratingly deceptive rage platformer. Fake floors, escaping keys, and total layout chaos included.
-                    </p>
-                </div>
-                <!-- Link your actual download file path inside the href="..." when ready -->
-                <a href="#" class="card-btn">Download Mod</a>
+        <!-- Background text repeat layer -->
+        <div class="bg-pattern">back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background back background</div>
+
+        <!-- Website Header Navigation Bar -->
+        <header>
+            <a href="#" class="logo">epik mods</a>
+            <input type="text" class="search-bar" id="modSearch" placeholder="Search Minecraft mods...">
+        </header>
+
+        <!-- Hero Joking Banner Area -->
+        <main class="hero-container">
+            <div class="joke-box">
+                <div class="joke-text">start searching the seven se—</div>
+                <a href="#mod-section" class="download-btn">mods.</a>
             </div>
+        </main>
 
-            <!-- Mod Card 2: Future Project Placeholder -->
-            <div class="mod-card">
-                <div>
-                    <h3 class="card-title" style="color: #555;">Coming Soon...</h3>
-                    <p class="card-desc" style="color: #666;">
-                        Cooking up another chaotic gameplay overhaul. Stay tuned or your graphics card might actually explode this time.
-                    </p>
-                </div>
-                <a href="#" class="card-btn locked">Locked</a>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- Sarcastic Desktop Notification Warning -->
-    <footer>
-        Note: We are not responsible for exploded graphics cards
-    </footer>
-
-    <!-- Search Bar Logic Script -->
-    <script>
-        document.getElementById('modSearch').addEventListener('input', function(e) {
-            let filter = e.target.value.toLowerCase();
-            let cards = document.querySelectorAll('.mod-card');
+        <!-- Dedicated Mods Catalog Section -->
+        <section id="mod-section" class="mod-section">
+            <h2 class="section-title">Available Mods</h2>
             
-            cards.forEach(card => {
-                let title = card.querySelector('.card-title').textContent.toLowerCase();
-                let desc = card.querySelector('.card-desc').textContent.toLowerCase();
-                if(title.includes(filter) || desc.includes(filter)) {
-                    card.style.display = "flex";
-                } else {
-                    card.style.display = "none";
-                }
-            });
-        });
-    </script>
-
-</body>
-</html>
+            <div class="mod-grid">
+                
+                <!-- Mod Card 1: Level Devil Project -->
+                <div class="mod-card">
